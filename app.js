@@ -129,8 +129,8 @@ app.get("/register", function(req, res) {
     res.render("register");
   });
 
-app.post("/register", async function(req, res) {
-  await User.register({ 
+app.post("/register", function(req, res) {
+    User.register({ 
     username: req.body.email, 
     name: req.body.name, 
     email: req.body.email }, 
@@ -161,12 +161,12 @@ app.post("/register", async function(req, res) {
 //     })
 // })
 
-app.post("/login", async function(req, res) {
+app.post("/login", function(req, res) {
    const user = new User({
      username: req.body.email,
      password: req.body.password
    })
-   await req.login(user, function(err) {
+    req.login(user, function(err) {
     if (err) {
         console.log(err)
     } else {

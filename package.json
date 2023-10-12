@@ -1,9 +1,9 @@
 {
   "name": "mono",
-  "homepage": "https://da9104.github.io/vanilla_oauth_app",
+  "homepage": "https://auth-od9d.onrender.com/",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/app.js",
+  "main": "app.js",
   "scripts": {
     "start": "npm run build:css && nodemon app.js",
     "predeploy": "npm run build",
