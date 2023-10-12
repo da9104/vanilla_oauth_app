@@ -5,7 +5,7 @@
   "description": "",
   "main": "./src/app.js",
   "scripts": {
-    "start": "npm run build:css && nodemon ./src/app.js",
+    "start": "npm run build:css && nodemon app.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "build:css": "npx tailwindcss -i public/styles.css -o public/style.css",
