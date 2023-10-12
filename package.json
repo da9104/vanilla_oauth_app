@@ -3,7 +3,7 @@
   "homepage": "https://da9104.github.io/vanilla_oauth_app",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "npm run build:css && nodemon ./src/app.js",
     "predeploy": "npm run build",
