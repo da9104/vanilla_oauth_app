@@ -34,7 +34,7 @@
           </nav>
 
           <!-- Mobile menu, show/hide based on menu open state. -->
-          <div id="mod_mec" x-show="sidebarOpen" class="lg:hidden modal" role="dialog" aria-modal="true">
+          <div id="mod_mec" x-show="sidebarOpen" class="hidden md:hidden lg:hidden modal" role="dialog" aria-modal="true">
             <!-- Background backdrop, show/hide based on slide-over state. -->
             <div class="fixed inset-0 z-50"></div>
             <div @click="sidebarOpen = false" x-show="sidebarOpen" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"  class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
