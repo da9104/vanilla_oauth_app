@@ -12,7 +12,8 @@ const LocalStrategy = require("passport-local").Strategy;
 const passportLocalMongoose = require("passport-local-mongoose")
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate")
-// const encrypt = require("mongoose-encryption")
+const MongoStore = require('connect-mongo')
+const flash = require('connect-flash')
 
 dotenv.config()
 
@@ -25,10 +26,13 @@ app.use(bodyParser.urlencoded({
 
 app.use(session({
     secret: process.env.SECRET,
+    store: MongoStore.create({mongoUrl: process.env.CONNECTIONDB}),
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true} // session is valid for One day
 }))
 
+app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
 
@@ -55,6 +59,10 @@ UserSchema.plugin(findOrCreate)
 const User = mongoose.model("users", UserSchema);
 User.createIndexes();
 
+const getAvatar = function() {
+    this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+}
+
 passport.use(User.createStrategy())
 passport.use(new LocalStrategy({
     usernameField: "email",
@@ -79,8 +87,8 @@ passport.use(new GoogleStrategy({
         // console.log(profile)
         User.findOrCreate({ 
             googleId: profile.id, 
-            username: profile.id,
-            email: profile._json.email,
+            username: profile.emails[0].value,
+            email: profile._json.email, 
             name: profile.displayName,
             avatar: profile._json.picture
         }, function(err, user) {
@@ -102,13 +110,13 @@ app.get("/auth/google/secret", passport.authenticate('google', {
     failureRedirect: "/login"
 }));
 
-app.get("/secret", function(req, res) {
+app.get("/secret", function(req, res, next) {
     if (req.isAuthenticated()) {
-        User.findOne({ "name" : {$ne: null}})
+        User.findOne({ email : {$ne: null} }) // User.findOne({ "name" : {$ne: null}})
         .then((foundUser) => {
             console.log(foundUser)
             res.render("secret", { data: foundUser })})
-        .catch(console.log(err))
+        .catch((err) => console.log(err))
     } else {
         res.redirect("/login")
     }
@@ -133,7 +141,9 @@ app.post("/register", function(req, res) {
     User.register({ 
     username: req.body.email, 
     name: req.body.name, 
-    email: req.body.email }, 
+    email: req.body.email,
+    // avatar: getAvatar()
+}, 
     req.body.password, function(err, user) {
     if (err) {
         console.log(err)
@@ -192,6 +202,9 @@ app.post("/login", function(req, res) {
 //          }}).catch((err) => console.log(err))
 // })
 
+
+
+  
 app.listen(process.env.PORT || 5001)
 console.log("server started on port", process.env.PORT)
 module.exports = app

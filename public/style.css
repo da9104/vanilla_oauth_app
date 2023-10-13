@@ -534,10 +534,6 @@ video {
   --tw-backdrop-sepia:  ;
 }
 
-.static {
-  position: static;
-}
-
 #user-menu ~ #user-menu-dropdown {
   --transform-translate-x: 0;
   --transform-translate-y: 0;
