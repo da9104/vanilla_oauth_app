@@ -34,7 +34,7 @@
     "flash": "^1.1.0",
     "gh-pages": "^6.0.0",
     "md5": "^2.3.0",
-    "mongodb": "^6.1.0",
+    "mongodb": "^5.9.0",
     "mongoose": "^7.6.0",
     "mongoose-encryption": "^2.1.2",
     "mongoose-findorcreate": "^4.0.0",
@@ -53,7 +53,6 @@
     "tailwindcss": "^3.3.3"
   },
   "engines": {
-
     "node": ">=14 <18.17.1"
   }
 }
