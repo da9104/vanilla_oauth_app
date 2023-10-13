@@ -112,7 +112,7 @@ app.get("/auth/google/secret", passport.authenticate('google', {
 
 app.get("/secret", function(req, res, next) {
     if (req.isAuthenticated()) {
-        User.findOne({ email : {$ne: null} }) // User.findOne({ "name" : {$ne: null}})
+        User.findOne({ "username" : req.body.email || {$ne: null} }) // User.findOne({ "name" : {$ne: null}})
         .then((foundUser) => {
             console.log(foundUser)
             res.render("secret", { data: foundUser })})
