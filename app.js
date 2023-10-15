@@ -32,14 +32,14 @@ app.use(session({
     cookie: {maxAge: 1000 * 60 * 60 * 24, httpOnly: true} // session is valid for One day
 }))
 
-app.use(flash())
-app.use(passport.initialize())
 app.use(passport.session())
+app.use(flash())
 
 mongoose.connect(process.env.CONNECTIONDB, { useNewUrlParser: true })
 
 // Schema for users of app
 const UserSchema = new mongoose.Schema({
+    _id: { type: mongoose.Schema.Types.ObjectId }, // const Schema = require('mongoose').Schema
     username: String,
     googleId: String,
     avatar: String,
@@ -57,24 +57,34 @@ UserSchema.plugin(passportLocalMongoose, {
     usernameField : "email" });
 UserSchema.plugin(findOrCreate)
 const User = mongoose.model("users", UserSchema);
+module.exports = {User, UserSchema}
 User.createIndexes();
 
-const getAvatar = function() {
-    this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
-}
+// const getAvatar = function() {
+//     this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`
+// }
 
 passport.use(User.createStrategy())
 passport.use(new LocalStrategy({
     usernameField: "email",
-  },User.authenticate()));
+},User.authenticate()));
+
+app.use(passport.initialize());
 
 passport.serializeUser((user, done) => {
-    done(null, user.id);
+    done(null, user);
  });
- 
+
 passport.deserializeUser(async (id, done) => {
-   const USER = await User.findById(id);
+   const USER = await User.findById(id).exec()
    done(null, USER);
+//    User.findById(id)
+//      .then((user) => {
+//      done(null, user);
+//    })
+//    .catch((error) => {
+//      console.log(`Error: ${error}`);
+//    });
  });
 
 passport.use(new GoogleStrategy({
@@ -83,9 +93,10 @@ passport.use(new GoogleStrategy({
     callbackURL: process.env.CALLBACKURL,
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
     },
-    function(accessToken, refeshToken, profile, cb) {
+    async function(accessToken, refeshToken, profile, cb) {
         // console.log(profile)
         User.findOrCreate({ 
+            _id: new mongoose.Types.ObjectId(),
             googleId: profile.id, 
             username: profile.emails[0].value,
             email: profile._json.email, 
@@ -110,20 +121,21 @@ app.get("/auth/google/secret", passport.authenticate('google', {
     failureRedirect: "/login"
 }));
 
-app.get("/secret", function(req, res, next) {
+app.get("/secret", async function(req, res, next) {
+    // console.log(req.user.username)
     if (req.isAuthenticated()) {
-        User.findOne({ "username" : req.body.email || {$ne: null} }) // User.findOne({ "name" : {$ne: null}})
-        .then((foundUser) => {
-            console.log(foundUser)
-            res.render("secret", { data: foundUser })})
-        .catch((err) => console.log(err))
+        await User.findOne({username: req.user.username}) // User.findOne({ "name" : {$ne: null}})
+       .then((foundUser) => {
+         console.log(foundUser)
+         res.render("secret", { data: foundUser })})
+       .catch((err) => console.log(err))
     } else {
         res.redirect("/login")
     }
   });
 
 app.post("/logout", function(req, res, next) {
-    req.logout(function(err) {
+      req.logout(function(err) {
       if (err) { return next(err); }
       res.redirect("/");
     });
@@ -139,18 +151,19 @@ app.get("/register", function(req, res) {
 
 app.post("/register", function(req, res) {
     User.register({ 
+    _id: new mongoose.Types.ObjectId(),
     username: req.body.email, 
     name: req.body.name, 
     email: req.body.email,
     // avatar: getAvatar()
-}, 
+    }, 
     req.body.password, function(err, user) {
     if (err) {
         console.log(err)
         res.redirect("/register")
     } else {
         passport.authenticate("local")(req, res, function() {
-        res.redirect("/secret")
+        res.render("secret", {data: user})
       })
     }
   })
@@ -171,21 +184,22 @@ app.post("/register", function(req, res) {
 //     })
 // })
 
-app.post("/login", function(req, res) {
+app.post("/login", function(req, res, next) {
    const user = new User({
-     username: req.body.email,
-     password: req.body.password
-   })
+     email: req.body.email,
+     password: req.body.password 
+    })
     req.login(user, function(err) {
+    console.log(user)
     if (err) {
         console.log(err)
     } else {
         passport.authenticate("local")(req, res, function() {
-        res.redirect("/secret")
+        res.redirect('/secret')
      })
-   }
-  })
-})
+    }
+    })
+}) 
 
 // app.post("/login", async function(req, res) {
 //     const email = req.body.email
@@ -202,9 +216,6 @@ app.post("/login", function(req, res) {
 //          }}).catch((err) => console.log(err))
 // })
 
-
-
-  
 app.listen(process.env.PORT || 5001)
 console.log("server started on port", process.env.PORT)
 module.exports = app
