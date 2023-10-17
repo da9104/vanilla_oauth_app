@@ -4,8 +4,8 @@ const bodyParser = require("body-parser")
 const mongoose = require("mongoose")
 const dotenv = require("dotenv")
 const md5 = require("md5")
-const bcrypt = require("bcrypt")
-const saltRounds = 10
+// const bcrypt = require("bcrypt")
+// const saltRounds = 10
 const session = require("express-session")
 const passport = require("passport")
 const LocalStrategy = require("passport-local").Strategy;
@@ -35,8 +35,7 @@ app.use(session({
 app.use(passport.session())
 app.use(flash())
 
-mongoose.connect(process.env.CONNECTIONDB, { useNewUrlParser: true })
-
+mongoose.connect(process.env.CONNECTIONDB, { useNewUrlParser: true, useUnifiedTopology: true })
 // Schema for users of app
 const UserSchema = new mongoose.Schema({
     _id: { type: mongoose.Schema.Types.ObjectId }, // const Schema = require('mongoose').Schema
@@ -96,7 +95,6 @@ passport.use(new GoogleStrategy({
     async function(accessToken, refeshToken, profile, cb) {
         // console.log(profile)
         User.findOrCreate({ 
-            _id: new mongoose.Types.ObjectId(),
             googleId: profile.id, 
             username: profile.emails[0].value,
             email: profile._json.email, 

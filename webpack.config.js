@@ -5,7 +5,7 @@ module.exports = {
  watchOptions: {
     ignored: /node_modules/,
   },
- entry: './src/app.js',
+ entry: './app.js',
  mode: "development",
  devServer: {
     port: 8080, 
