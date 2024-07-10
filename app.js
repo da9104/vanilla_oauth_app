@@ -183,6 +183,9 @@ app.post("/register", function(req, res) {
 // })
 
 app.post("/login", function(req, res, next) {
+
+   User.init()
+
    const user = new User({
      email: req.body.email,
      password: req.body.password 
