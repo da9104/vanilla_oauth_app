@@ -38,7 +38,7 @@ app.use(flash())
 mongoose.connect(process.env.CONNECTIONDB, { useNewUrlParser: true, useUnifiedTopology: true })
 // Schema for users of app
 const UserSchema = new mongoose.Schema({
-    _id: { type: mongoose.Schema.Types.ObjectId }, // const Schema = require('mongoose').Schema
+    // _id: { type: mongoose.Schema.Types.ObjectId }, // const Schema = require('mongoose').Schema
     username: String,
     googleId: String,
     avatar: String,
@@ -187,15 +187,17 @@ app.post("/login", function(req, res, next) {
    User.init()
 
    const user = new User({
+     _id: new mongoose.Types.ObjectId(), 
      email: req.body.email,
      password: req.body.password 
     })
     req.login(user, function(err) {
-    console.log(user)
+    // console.log(user)
     if (err) {
         console.log(err)
     } else {
         passport.authenticate("local")(req, res, function() {
+        user.save();
         res.redirect('/secret')
      })
     }
